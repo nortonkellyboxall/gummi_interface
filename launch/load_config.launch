@@ -1,17 +1,11 @@
 <launch>
-  <arg name="clone" default="default"/>
-  <rosparam file="$(find gummi_description)/config/gummi.yaml" command="load"/>
-  <rosparam file="$(find gummi_description)/config/shoulder_roll.yaml" command="load" ns="shoulder_roll"/>
-  <rosparam file="$(find gummi_description)/config/calibration_shoulder_roll.yaml" command="load" ns="shoulder_roll/calib"/>
-  <rosparam file="$(find gummi_description)/config/shoulder_pitch.yaml" command="load" ns="shoulder_pitch"/>
-  <rosparam file="$(find gummi_description)/config/calibration_shoulder_pitch.yaml" command="load" ns="shoulder_pitch/calib"/>
-  <rosparam file="$(find gummi_description)/config/shoulder_yaw.yaml" command="load" ns="shoulder_yaw"/>
-  <rosparam file="$(find gummi_description)/config/calibration_shoulder_yaw.yaml" command="load" ns="shoulder_yaw/calib"/>
-  <rosparam file="$(find gummi_description)/config/elbow.yaml" command="load" ns="elbow"/>
-  <rosparam file="$(find gummi_description)/config/calibration_elbow.yaml" command="load" ns="elbow/calib"/>
-  <rosparam file="$(find gummi_description)/config/wrist_pitch.yaml" command="load" ns="wrist_pitch"/>
-  <!-- <rosparam file="$(find gummi_description)/config/calibration_wrist.yaml" command="load" ns="wrist/calib"/>	 -->
-  <rosparam file="$(find gummi_description)/config/upperarm_roll.yaml" command="load" ns="upperarm_roll"/>
-  <rosparam file="$(find gummi_description)/config/forearm_roll.yaml" command="load" ns="forearm_roll"/>
-  <rosparam file="$(find gummi_description)/config/gripper.yaml" command="load" ns="gripper"/>
+    <!-- This file can be the same for every base-ee pair -->
+    <arg name="base" value="$(env ROS_GUMMI_BASE)"/>
+    <arg name="ee" value="$(env ROS_GUMMI_EE)"/>
+    <include file="$(eval find('gummi_base_' + base) + '/launch/load_config_base.launch')">
+        <!--arg name="base" value="$(arg base)"/-->
+    </include>
+    <include file="$(eval find('gummi_ee_' + ee) + '/launch/load_config_ee.launch')">
+        <!--arg name="ee" value="$(arg ee)"/-->
+    </include>
 </launch>
