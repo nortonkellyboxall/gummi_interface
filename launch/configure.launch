@@ -1,0 +1,5 @@
+<launch>
+    <include file="$(find gummi_interface)/launch/load_config.launch" ns="gummi">
+    </include>
+  <node name="gummi" pkg="gummi_interface" type="gummi_configure_antagonist.py" output="screen"/>
+</launch>

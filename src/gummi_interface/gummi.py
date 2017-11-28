@@ -158,6 +158,15 @@ class Gummi:
                 self.joints[name]['controller'].servoTo(self.joints[name]['gradual_startup_position'])
             rospy.sleep(self.joints[name]['gradual_startup_time'])
 
+    def doZeroEquilibriumPose(self):
+        for name in self.joints.keys():
+            if self.joints[name]['antagonist']:
+                self.joints[name]['controller'].moveTo(0,
+                                                       0)
+            else:
+                self.joints[name]['controller'].servoTo(0)
+            rospy.sleep(self.joints[name]['gradual_startup_time'])
+
 
     # This function is not used anywhere here...
     def getJointAngles(self):
