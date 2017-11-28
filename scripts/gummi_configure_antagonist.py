@@ -14,7 +14,7 @@ def main(args):
 
     gummi = Gummi()
 
-    print('WARNING: Moving joints sequentially to zero equilibrium and zero co-contraction for antagonist joints, zero joint angle for direct drive joints.')
+    rospy.logwarn('WARNING: Moving joints sequentially to zero equilibrium and zero co-contraction for antagonist joints, zero joint angle for direct drive joints.')
 
     rospy.sleep(2)
     
@@ -22,7 +22,7 @@ def main(args):
 
     rospy.sleep(2)
     
-    print('Done.')
+    rospy.logwarn('Done.')
 
     r.sleep()
   
