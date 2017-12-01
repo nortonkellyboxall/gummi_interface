@@ -47,7 +47,7 @@ def main(args):
             gummi.publishJointState()
             r.sleep()
         except:
-            rospy.signal_shutdown("gummi_dynamixel manager seems to be dead... exiting!")
+            rospy.signal_shutdown("gummi dynamixel manager seems to be dead... exiting!")
 
 
 if __name__ == '__main__':
