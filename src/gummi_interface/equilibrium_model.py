@@ -47,11 +47,8 @@ class EquilibriumModel:
         equilibrium = self.dEquilibrium
         cocontraction = self.cCocontraction
 
-        commandFlexor = self.signFlexor*(-equilibrium*self.servoRange/4.0 + cocontraction*pi/2.0)
-        commandExtensor = self.signExtensor*(equilibrium*self.servoRange/4.0 + cocontraction*pi/2.0)
-
-        self.commandFlexor = commandFlexor + self.servoOffset
-        self.commandExtensor = commandExtensor + self.servoOffset
+        self.commandFlexor = self.signFlexor * ((-equilibrium*self.servoRange/4.0 + cocontraction*pi/2.0) + self.servoOffset)
+        self.commandExtensor = self.signExtensor * ((equilibrium*self.servoRange/4.0 + cocontraction*pi/2.0) + self.servoOffset)
 
     def capCocontraction(self):
         if self.cCocontraction > self.maxCocontraction:
