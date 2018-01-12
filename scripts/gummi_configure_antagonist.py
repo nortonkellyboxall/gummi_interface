@@ -18,7 +18,7 @@ def main(args):
 
     rospy.sleep(2)
     
-    gummi.doZeroEquilibriumPose()
+    gummi.doZeroAllServos()
 
     rospy.sleep(2)
     

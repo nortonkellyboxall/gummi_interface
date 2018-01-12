@@ -158,11 +158,11 @@ class Gummi:
                 self.joints[name]['controller'].servoTo(self.joints[name]['gradual_startup_position'])
             rospy.sleep(self.joints[name]['gradual_startup_time'])
 
-    def doZeroEquilibriumPose(self):
+    def doZeroAllServos(self):
         for name in self.joints.keys():
             if self.joints[name]['antagonist']:
-                self.joints[name]['controller'].moveTo(0,
-                                                       0)
+                self.joints[name]['controller'].eqModel.flexor.servoTo(0)
+                self.joints[name]['controller'].eqModel.extensor.servoTo(0)
             else:
                 self.joints[name]['controller'].servoTo(0)
             rospy.sleep(self.joints[name]['gradual_startup_time'])
