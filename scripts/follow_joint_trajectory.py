@@ -85,7 +85,7 @@ class JointTrajectoryActionController():
 
         '''
 
-        self.speed_factor = 3
+        self.speed_factor = 2 #3
         self.update_command_rate = 60 # max frequency commands are published
         self.always_smooth = False # if True, always sends at least all segments
 
@@ -168,7 +168,7 @@ class JointTrajectoryActionController():
         # The controller will look for goals / trajectory contrains on the parameter server
         # The values should be set on top of the controller namespace + '/joint_trajectory_action_node/constraints'
         for joint in self.joint_names:
-            self.goal_constraints.append(rospy.get_param(ns + '/' + joint + '/goal', 1.5))
+            self.goal_constraints.append(rospy.get_param(ns + '/' + joint + '/goal', 0.04))
             self.trajectory_constraints.append(rospy.get_param(ns + '/' + joint + '/trajectory', 1.5))
 
         rospy.loginfo("Goal constrains: " + ",".join([ji+"="+str(ci) for ji,ci in zip(self.joint_names,self.goal_constraints)]))
