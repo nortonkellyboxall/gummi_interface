@@ -13,14 +13,17 @@ from gummi_interface.gummi import Gummi
 def main(args):
 
     pi = 3.1416
-    print("Please enter path to folder where you want calibration file saved:")
-    path =  raw_input()
 
     rospy.init_node('gummiCalibrate', anonymous=True)
-    r = rospy.Rate(60)  
-    
+    r = rospy.Rate(60)
+
     gummi = Gummi()
-    joint = gummi.shoulderYaw
+
+    name = raw_input("Enter name of antagonist joint to test:  ")
+    joint = gummi.joints[name]['controller']
+
+    path = raw_input("Please enter path to folder where you want calibration file saved:  ")
+
     numSteps = 9
 
     minAngle = joint.angle.getMin()
@@ -30,11 +33,9 @@ def main(args):
     anglesToTry = np.linspace(minAngle, maxAngle, numSteps)
     cocontractionsToTry = np.linspace(1.0, 0.0, numSteps)
 
-    gummi.setCocontraction(0.6, 0.6, 0.6, 0.6, 0.6)
-
     print('WARNING: Moving joints sequentially to equilibrium positions.')
     gummi.doGradualStartup()
-    
+
     print('WARNING: Moving to resting pose, hold arm!')
     rospy.sleep(1)
 
@@ -52,11 +53,11 @@ def main(args):
     for i in range (0,300):
         joint.servoTo(0, 0.5)
         r.sleep()
-    
+
     thetas = list()
     ccs = list()
     equilibriums = list()
-    for cocont in cocontractionsToTry: 
+    for cocont in cocontractionsToTry:
 
         for i in range (0,350):
             joint.servoTo(0, cocont)
