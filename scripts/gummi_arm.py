@@ -33,7 +33,7 @@ def main(args):
     #    gummi.forearmRoll.servoTo(pi/2)
     #    r.sleep()
 
-    gummi.setCollisionResponses(shoulder_yaw=False, shoulder_roll=False, shoulder_pitch=False, elbow=False)
+
     rospy.loginfo("GummiArm is live!")
 
     while not rospy.is_shutdown():
