@@ -200,12 +200,9 @@ class Antagonist:
             self.eqModel.doEquilibriumIncrement(-0.002)
 
     def doUpdateWhenCollision(self):
-        if not self.inverseModelCollision.generateOk():
-            rospy.logwarn("Warning: Outside ballistic calibration data for joint " + self.name + ", not using model-based collision reaction.")
-            self.collisionReflex.removeExcitation()
-        else:
-            self.feedbackReflex.removeExcitation()
-            self.eqModel.dEquilibrium = self.inverseModelCollision.getEquilibriumPoint()
+        self.feedbackReflex.removeExcitation()
+        self.eqModel.dEquilibrium = self.inverseModelCollision.getEquilibriumPoint()
+
 
     def doUpdateWhenFree(self):
         if self.velocity:
