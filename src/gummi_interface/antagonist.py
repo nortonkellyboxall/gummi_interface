@@ -57,6 +57,7 @@ class Antagonist:
         self.eqModel.calculateEqVelCalibration(jointRange)
 
     def initVariables(self):
+        self.collisionResponse = True
         self.errors = deque()
         self.velocity = False
         self.closedLoop = False
