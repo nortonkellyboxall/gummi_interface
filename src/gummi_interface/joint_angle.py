@@ -17,6 +17,10 @@ class JointAngle:
         self.initSubscriber()
         self.initVariables()
         self.msgTime = rospy.Time.from_sec(0.0)
+        self.load = 0.0 # defining load attribute for each joint (initialized to 0.)
+
+    def getMotorLoad(self):     # accessor method for motor load values.
+        return self.load
 
     def initSubscriber(self):
         rospy.Subscriber(self.name + '_controller/state', JointState, self.encoderCallback)
@@ -36,6 +40,7 @@ class JointAngle:
     def encoderCallback(self, msg):
         angle = msg.current_pos * self.sign
         velocity = msg.velocity * self.sign
+        self.load = msg.load    # load values from "_controller/state/load" topics for each motor.
         self.msgTime = rospy.Time(msg.header.stamp.secs, msg.header.stamp.nsecs)
         if abs(angle) <=  math.pi * 4:
             if self.encoderFlag and msg.goal_pos == angle:
