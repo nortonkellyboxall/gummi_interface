@@ -30,10 +30,10 @@ class EquilibriumModel:
         self.commandFlexor = 0
         self.commandExtensor = 0
         self.dEquilibrium = 0
-   
+
         self.dCocontraction = 0
         self.cCocontraction = 0
- 
+
         self.maxCocontraction = 1.0
         self.dEqVelCalibration = 1.0
 
@@ -42,7 +42,7 @@ class EquilibriumModel:
 
     def getCocontractionForAlphas(self):
         return (self.extensor.getJointAngle()*self.signExtensor + self.flexor.getJointAngle()*self.signFlexor)/pi
-        
+
     def createCommand(self):
         equilibrium = self.dEquilibrium
         cocontraction = self.cCocontraction
@@ -74,6 +74,19 @@ class EquilibriumModel:
 
     def getCommandedCocontraction(self):
         return self.cCocontraction
-        
 
+    # Prevents motors from overloading ("limit" value is passed in antagonist.py)
+    def limitLoad(self, limit):
 
+        try:
+
+            if (self.flexor.angle.getMotorLoad() >= limit) or (self.flexor.angle.getMotorLoad() <= -limit):
+                print "THE HUMANITY!!!"
+                self.flexor.setTorqueLimit(0.0) # turn off torque when motors are close to overloading.
+            else:
+                print "All is well..."
+                self.flexor.setTorqueLimit(1.0)
+            #print self.angle.getMotorLoad()
+
+        except rospy.ServiceException, e:
+            print "Could not evaluate load: %s"%e
