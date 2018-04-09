@@ -165,6 +165,9 @@ class Antagonist:
         currentTime = rospy.get_rostime()
         delay = currentTime - msgTime
 
+        # limits the load to a threshold of +/- 0.5 before turning off torque.
+        self.eqModel.limitLoad(0.5)
+
         if delay.to_sec() > 0.25:
             rospy.logwarn("Warning: Delay of message larger than 0.25 seconds for encoder " + self.nameEncoder + ", stopping.")
         else:
