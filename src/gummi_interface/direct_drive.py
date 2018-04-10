@@ -68,3 +68,7 @@ class DirectDrive:
             te(limit)
         except rospy.ServiceException, e:
             print "Service call failed: %s"%e
+
+    # Returns True if particular motor is overloaded.
+    def isOverloaded(self, limit):
+        return True if (self.angle.getMotorLoad() >= limit) or (self.angle.getMotorLoad() <= -limit) else False

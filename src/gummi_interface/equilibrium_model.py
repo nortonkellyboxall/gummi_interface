@@ -80,13 +80,9 @@ class EquilibriumModel:
 
         try:
 
-            if (self.flexor.angle.getMotorLoad() >= limit) or (self.flexor.angle.getMotorLoad() <= -limit):
-                print "THE HUMANITY!!!"
-                self.flexor.setTorqueLimit(0.0) # turn off torque when motors are close to overloading.
-            else:
-                print "All is well..."
-                self.flexor.setTorqueLimit(1.0)
-            #print self.angle.getMotorLoad()
+            self.flexor.setTorqueLimit(0.0) if self.flexor.isOverloaded(limit) else self.flexor.setTorqueLimit(1.0)
+            self.extensor.setTorqueLimit(0.0) if self.extensor.isOverloaded(limit) else self.extensor.setTorqueLimit(1.0)
+
 
         except rospy.ServiceException, e:
-            print "Could not evaluate load: %s"%e
+            print "Could not limit load: %s"%e
