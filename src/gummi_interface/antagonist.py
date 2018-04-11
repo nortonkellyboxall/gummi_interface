@@ -165,8 +165,8 @@ class Antagonist:
         currentTime = rospy.get_rostime()
         delay = currentTime - msgTime
 
-        # limits the load to a threshold of +/- 0.5 before turning off torque.
-        self.eqModel.limitLoad(0.5)
+        # limits the load of a bidirectional motor-pair to a threshold of +/- the "loadLimit" parameter defined in the .yaml config file of each joint.
+        self.eqModel.limitLoad()
 
         if delay.to_sec() > 0.25:
             rospy.logwarn("Warning: Delay of message larger than 0.25 seconds for encoder " + self.nameEncoder + ", stopping.")
