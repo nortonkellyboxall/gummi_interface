@@ -11,6 +11,9 @@ class EquilibriumModel:
     def __init__(self, name):
         self.name = name
 
+        # retrives loadLimit parameter from
+        self.loadLimit = rospy.get_param("~" + self.name + "/equilibrium/loadLimit")
+
         self.sign = rospy.get_param("~" + self.name + "/equilibrium/sign")
         self.signFlexor = rospy.get_param("~" + self.name + "/equilibrium/signFlexor")
         self.signExtensor = rospy.get_param("~" + self.name + "/equilibrium/signExtensor")
@@ -76,13 +79,14 @@ class EquilibriumModel:
         return self.cCocontraction
 
     # Prevents motors from overloading ("limit" value is passed in antagonist.py)
-    def limitLoad(self, limit):
+    def limitLoad(self):
 
         try:
 
-            self.flexor.setTorqueLimit(0.0) if self.flexor.isOverloaded(limit) else self.flexor.setTorqueLimit(1.0)
-            self.extensor.setTorqueLimit(0.0) if self.extensor.isOverloaded(limit) else self.extensor.setTorqueLimit(1.0)
-
+            # If motor exceeds its load limit (parameter in joint config .yaml file), then turn-off motor torque,#
+            # otherwise turn it on.
+            self.flexor.setTorqueLimit(0.0) if self.flexor.isOverloaded(self.loadLimit) else self.flexor.setTorqueLimit(0.2)
+            self.extensor.setTorqueLimit(0.0) if self.extensor.isOverloaded(self.loadLimit) else self.extensor.setTorqueLimit(0.2)
 
         except rospy.ServiceException, e:
             print "Could not limit load: %s"%e
