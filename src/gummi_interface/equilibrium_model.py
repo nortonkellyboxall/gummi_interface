@@ -81,12 +81,42 @@ class EquilibriumModel:
     # Prevents motors from overloading ("limit" value is passed in antagonist.py)
     def limitLoad(self):
 
+        overloadDone = False
+
         try:
 
-            # If motor exceeds its load limit (parameter in joint config .yaml file), then turn-off motor torque,#
-            # otherwise turn it on.
-            self.flexor.setTorqueLimit(0.0) if self.flexor.isOverloaded(self.loadLimit) else self.flexor.setTorqueLimit(0.2)
-            self.extensor.setTorqueLimit(0.0) if self.extensor.isOverloaded(self.loadLimit) else self.extensor.setTorqueLimit(0.2)
+            # Reduce co-contraction and move equilibrium position when motor approaching loadLimit.
+            # Turn off torque once loadLimit is reached
+            # (BUG: KEEP LOAD-LIMIT BELOW ACTUAL MOTOR STALL CURRENT TO PREVENT DAMAGE TO MOTOR).
+             if (self.flexor.isOverloaded(self.loadLimit - 0.1) or self.extensor.isOverloaded(self.loadLimit - 0.1) ) and self.cCocontraction > 0.0:
+
+                 self.cCocontraction -= 0.1
+                 self.doEquilibriumIncrement(-0.002)
+
+                 if self.flexor.isOverloaded(self.loadLimit):
+                     self.flexor.setTorqueLimit(0.0)
+
+                 if self.extensor.isOverloaded(self.loadLimit):
+                     self.extensor.setTorqueLimit(0.0)
+
+                 # Apply overload-response changes.
+                 self.createCommand()
+                 self.publishCommand()
+
+                 overloadDone = True
+
+
+             if overloadDone:
+
+                 # Do not change equilibrium position/ cocontraction when safely below load limit.
+                 # is torqueLimit proportional to cocontraction?
+
+                 self.flexor.setTorqueLimit(self.cCocontraction)
+                 self.extensor.setTorqueLimit(self.cCocontraction)
+
+
+
+             print self.cCocontraction
 
         except rospy.ServiceException, e:
             print "Could not limit load: %s"%e
