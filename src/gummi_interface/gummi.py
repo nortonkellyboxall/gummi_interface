@@ -134,9 +134,8 @@ class Gummi:
     def goRestingPose(self, now):
         for name in self.joints.keys():
             if self.joints[name]['antagonist']:
-                self.joints[name]['controller'].goTo(0,
-                                                     self.joints[name]['effort'],
-                                                     now)
+                self.joints[name]['controller'].servoTo(0,
+                                                     self.joints[name]['effort'])
             else:
                 self.joints[name]['controller'].servoTo(0)
 
