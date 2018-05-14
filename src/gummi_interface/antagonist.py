@@ -124,6 +124,7 @@ class Antagonist:
         self.eqModel.dCocontraction = dCocontraction
         self.cocontractionReflex.clear()
         self.cocontractionReflex.setBaseContribution(dCocontraction)
+        self.limitWhenPassive()
         self.doUpdate()
 
     def moveWith(self, dEquilibriumVel, dCocontraction):
@@ -136,6 +137,7 @@ class Antagonist:
         self.cocontractionReflex.clear()
         self.cocontractionReflex.setBaseContribution(dCocontraction)
         self.angle.setDesiredToEncoder()
+        self.limitWhenPassive()
         self.doUpdate()
 
     def servoWith(self, dVelocity, dCocontraction):
@@ -157,7 +159,13 @@ class Antagonist:
         self.dCocontraction = dCocontraction
         self.cocontractionReflex.clear()
         self.cocontractionReflex.setBaseContribution(dCocontraction)
+        self.limitWhenPassive()
         self.doUpdate()
+
+    def limitWhenPassive(self):
+        if self.angle.isBeyondMin() or self.angle.isBeyondMax():
+            self.collisionReflex.removeExcitation()
+            self.doUpdateWhenLimit()
 
     def doUpdate(self):
         msgTime = self.angle.getMsgTime()
@@ -167,26 +175,22 @@ class Antagonist:
         if delay.to_sec() > 0.25:
             rospy.logwarn("Warning: Delay of message larger than 0.25 seconds for encoder " + self.nameEncoder + ", stopping.")
         else:
-            if self.angle.isBeyondMin() or self.angle.isBeyondMax():
-                self.collisionReflex.removeExcitation()
-                self.doUpdateWhenLimit()
-            else:
-                if (self.calibrated is 1) and self.collisionResponse:
-                    self.generateForwardError()
-                    self.collisionReflex.doDiscount()
+            if (self.calibrated is 1) and self.collisionResponse:
+                self.generateForwardError()
+                self.collisionReflex.doDiscount()
 
-                    if self.isOverloaded():
-                        self.collisionReflex.updateExcitation(1.0)
+                if self.isOverloaded():
+                    self.collisionReflex.updateExcitation(1.0)
 
-                    if self.collisionReflex.getContribution() > 0.5:
-                        if self.collisionReflex.getContribution() > 0.9:
-                            self.inverseModelCollision.setCocontraction(self.eqModel.getCocontractionForAlphas())
-                            self.inverseModelCollision.setAngle(self.getJointAngle())
-                        self.doUpdateWhenCollision()
-                    else:
-                        self.doUpdateWhenFree()
+                if self.collisionReflex.getContribution() > 0.5:
+                    if self.collisionReflex.getContribution() > 0.9:
+                        self.inverseModelCollision.setCocontraction(self.eqModel.getCocontractionForAlphas())
+                        self.inverseModelCollision.setAngle(self.getJointAngle())
+                    self.doUpdateWhenCollision()
                 else:
                     self.doUpdateWhenFree()
+            else:
+                self.doUpdateWhenFree()
 
         self.eqModel.capCocontraction()
         self.eqModel.createCommand()
