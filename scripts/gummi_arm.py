@@ -12,7 +12,7 @@ def main(args):
 
     rospy.init_node('GummiArm', anonymous=False)
     # anonymous=False because doesn't look like a good idea two GummiArm nodes...
-    r = rospy.Rate(60)
+    r = rospy.Rate(40)
     # Tried 100 and rostopic hz said it was working!
     # With 600 the elbow PID controller went crazy!
 
