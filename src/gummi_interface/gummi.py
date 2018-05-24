@@ -167,6 +167,13 @@ class Gummi:
                 self.joints[name]['controller'].servoTo(0)
             rospy.sleep(self.joints[name]['gradual_startup_time'])
 
+    def doSetPoseToDesired(self):
+        for name in self.joints.keys():
+            angle = self.joints[name]['controller'].getJointAngle()
+            if self.joints[name]['antagonist']:
+                self.joints[name]['controller'].servoTo(angle, self.joints[name]['effort'])
+            else:
+                self.joints[name]['controller'].servoTo(angle)
 
     # This function is not used anywhere here...
     def getJointAngles(self):
