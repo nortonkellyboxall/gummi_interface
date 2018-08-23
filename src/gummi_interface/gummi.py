@@ -92,7 +92,8 @@ class Gummi:
                         self.joints[name]['controller'].moveWith(self.joints[name]['velocity'],
                                                                  abs(self.joints[name]['effort']))
                     else: # directdrive
-                        rospy.logerr('Wrong value for joint {0}\'s effort'.format(name))
+                        self.joints[name]['controller'].servoWith(self.joints[name]['velocity'],
+                                                                 abs(self.joints[name]['effort']))
                 else: # normal movement
                     self.joints[name]['controller'].servoWith(self.joints[name]['velocity'],
                                                               self.joints[name]['effort'])
@@ -134,9 +135,8 @@ class Gummi:
     def goRestingPose(self, now):
         for name in self.joints.keys():
             if self.joints[name]['antagonist']:
-                self.joints[name]['controller'].goTo(0,
-                                                     self.joints[name]['effort'],
-                                                     now)
+                self.joints[name]['controller'].servoTo(0,
+                                                     self.joints[name]['effort'])
             else:
                 self.joints[name]['controller'].servoTo(0)
 
