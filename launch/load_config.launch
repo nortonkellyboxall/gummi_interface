@@ -2,13 +2,14 @@
     <!-- This file can be the same for every base-ee pair -->
     <arg name="base" value="$(env ROS_GUMMI_BASE)"/>
     <arg name="ee" value="$(env ROS_GUMMI_EE)"/>
+    <arg name="head" value="$(env ROS_GUMMI_HEAD)" />
     <include file="$(eval find('gummi_base_' + base) + '/launch/load_config_base.launch')">
         <!--arg name="base" value="$(arg base)"/-->
     </include>
     <include file="$(eval find('gummi_ee_' + ee) + '/launch/load_config_ee.launch')">
         <!--arg name="ee" value="$(arg ee)"/-->
     </include>
-    <include file="$(find gummi_head_twodof)/launch/load_config_head.launch">
+    <include file="$(eval find('gummi_head_' + head) +'/launch/load_config_head.launch')">
 
     </include>
 </launch>
