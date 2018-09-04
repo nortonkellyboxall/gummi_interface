@@ -1,0 +1,9 @@
+<launch>
+  <!-- This file can be the same for every base-ee pair -->
+  <arg name="base" value="$(env ROS_GUMMI_BASE)"/>
+  <arg name="ee" value="$(env ROS_GUMMI_EE)"/>
+  <include file="$(eval find('gummi_base_' + base) + '/launch/load_config_base.launch')">
+      <!--arg name="base" value="$(arg base)"/-->
+  </include>
+  <node name="gummi" pkg="gummi_interface" type="gummi_test.py" output="screen"/>
+</launch>

@@ -20,7 +20,7 @@ def main(args):
 
     rospy.logwarn('Moving joints sequentially to startup equilibrium positions.')
     gummi.doGradualStartup()
-
+    # gummi.testLimits()
     rospy.logwarn('Moving to resting pose, hold arm!')
     rospy.sleep(1)
 
