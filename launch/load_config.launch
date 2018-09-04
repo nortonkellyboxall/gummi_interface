@@ -8,4 +8,7 @@
     <include file="$(eval find('gummi_ee_' + ee) + '/launch/load_config_ee.launch')">
         <!--arg name="ee" value="$(arg ee)"/-->
     </include>
+    <include file="$(find gummi_head_twodof)/launch/load_config_head.launch">
+
+    </include>
 </launch>
