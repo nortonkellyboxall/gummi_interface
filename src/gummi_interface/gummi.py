@@ -165,6 +165,26 @@ class Gummi:
                 self.joints[name]['controller'].servoTo(self.joints[name]['gradual_startup_position'])
             rospy.sleep(self.joints[name]['gradual_startup_time'])
 
+    def testLimits(self):
+        for name in self.joints.keys():
+            if self.joints[name]['antagonist']:
+                raw_input("Press Enter to move the %s joint to its minimum postion" % self.joints[name]['controller'].name)
+                self.joints[name]['controller'].moveTo(self.joints[name]['controller'].angle.minAngle,
+                                                       self.joints[name]['effort'])
+                raw_input("Press Enter to move the %s joint to its maximum postion" % self.joints[name]['controller'].name)
+                self.joints[name]['controller'].moveTo(self.joints[name]['controller'].angle.maxAngle,
+                                                       self.joints[name]['effort'])
+                raw_input("Press Enter to move the %s joint to its zero postion" % self.joints[name]['controller'].name)
+                self.joints[name]['controller'].moveTo(0,
+                                                       self.joints[name]['effort'])
+            else:
+                raw_input("Press Enter to move the %s joint to its minimum postion" % self.joints[name]['controller'].name)
+                self.joints[name]['controller'].servoTo(self.joints[name]['controller'].angle.minAngle)
+                raw_input("Press Enter to move the %s joint to its maximum postion" % self.joints[name]['controller'].name)
+                self.joints[name]['controller'].servoTo(self.joints[name]['controller'].angle.maxAngle)
+                raw_input("Press Enter to move the %s joint to its zero postion" % self.joints[name]['controller'].name)
+                self.joints[name]['controller'].servoTo(0)
+
     def doZeroAllServos(self):
         for name in self.joints.keys():
             if self.joints[name]['antagonist']:
