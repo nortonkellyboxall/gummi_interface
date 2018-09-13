@@ -61,7 +61,9 @@ from sensor_msgs.msg import JointState  # send commands to GummiArm
 from trajectory_msgs.msg import JointTrajectory
 from control_msgs.msg import FollowJointTrajectoryAction  # it's passed to the action server itself at initialization.
 from control_msgs.msg import FollowJointTrajectoryFeedback  # it's published without using the action server (topic /state)
-from control_msgs.msg import FollowJointTrajectoryResult  # it's only passaed to the action server. curiously, it's always passed as an error (set_aborted method)
+from control_msgs.msg import FollowJointTrajectoryResult  # it's only passaed to the action server.
+                                                          # curiously, it's always passed as an error (set_aborted method)
+
 from control_msgs.msg import FollowJointTrajectoryActionFeedback
 
 from actionlib_msgs.msg import GoalStatus
@@ -83,8 +85,8 @@ class JointTrajectoryActionController():
 
         '''
 
-        self.speed_factor = 3 #if you increase this it completes plans faster
-        self.update_command_rate = 60 # max frequency commands are published
+        self.speed_factor = 5.0 #3
+        self.update_command_rate = 100 # max frequency commands are published
         self.always_smooth = False # if True, always sends at least all segments
 
         self.update_rate = 1000  # loop to wait until it's time to start the trajectory
@@ -465,11 +467,8 @@ if __name__ == '__main__':
     '''
 
     # The controllers below must match the ones from Moveit!
-    #controllers = ['shoulder_yaw','shoulder_roll','shoulder_pitch','upperarm_roll','elbow','forearm_roll','wrist_pitch']
-    controllers = rospy.get_param('/moveit/move_group/controller_list')[0].get('joints','none')
-    rospy.loginfo("Found controllers: " + str(controllers))
-    print controllers
-    controller_namespace = 'gummi_right_arm_controller'
+    controllers = ['head_yaw','head_pitch']
+    controller_namespace = 'head_joint_trajectory_controller'
 
     rospy.init_node('joint_trajectory_action_node', anonymous=False)
     # 'anonymous=False' because if there's another node like this running, something
