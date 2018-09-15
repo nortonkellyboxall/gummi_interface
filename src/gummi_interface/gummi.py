@@ -66,18 +66,25 @@ class Gummi:
 
 
     def cmdCallback(self, msg):
-        for name, position, velocity, effort in zip(msg.name, msg.position, msg.velocity, msg.effort):
-            self.joints[name]['position'] = position
-            self.joints[name]['velocity'] = velocity
-            self.joints[name]['effort'] = effort
-
         if self.teleop == 1 or self.velocity_control == 1:
-            self.doVelocityUpdate()
-        else:
-            if sum([effort >=0 for effort in msg.effort]):
-                self.servoTo()
+            for name, velocity, effort in zip(msg.name, msg.velocity, msg.effort):
+                self.joints[name]['velocity'] = velocity
+                self.joints[name]['effort'] = effort
+            if len(msg.position) is not 0:
+                rospy.logwarn("Receiving position list, but in teleop mode. Ignoring.")
             else:
-                self.passiveHold()
+                self.doVelocityUpdate()
+        else:
+            for name, position, velocity, effort in zip(msg.name, msg.position, msg.velocity, msg.effort):
+                self.joints[name]['position'] = position
+                self.joints[name]['effort'] = effort
+            if len(msg.position) is 0:
+                rospy.logwarn("Receiving zero length position list, but not in teleop mode. Ignoring.")
+            else:
+                if sum([effort >=0 for effort in msg.effort]):
+                    self.servoTo()
+                else:
+                    self.passiveHold()
 
 
     def doUpdate(self):
