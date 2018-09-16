@@ -94,7 +94,7 @@ class Gummi:
 
     def doVelocityUpdate(self):
         for name in self.joints.keys():
-                if self.joints[name]['effort'] < 0: # ballistic movement
+                if self.joints[name]['effort'] < 0: # shift equilibrium point in open loop
                     if self.joints[name]['antagonist']:
                         self.joints[name]['controller'].moveWith(self.joints[name]['velocity'],
                                                                  abs(self.joints[name]['effort']))

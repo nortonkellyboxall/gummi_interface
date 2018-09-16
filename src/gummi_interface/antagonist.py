@@ -202,6 +202,7 @@ class Antagonist:
         self.publishDiagnostics()
 
     def doUpdateWhenLimit(self):
+        rospy.logwarn("Warning: Outside joint range for joint " + self.name + " when moving passively (negative effort), shifting equilibrium.")
         if self.angle.isBeyondMin():
             self.eqModel.doEquilibriumIncrement(0.002)
         if self.angle.isBeyondMax():
