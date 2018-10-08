@@ -1,0 +1,9 @@
+<launch>
+
+<group ns="moveit">
+
+<node name="move" pkg="gummi_interface" type="move_to_grasp.py" output="screen"/> 
+
+</group>
+
+</launch>
