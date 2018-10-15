@@ -467,7 +467,11 @@ if __name__ == '__main__':
     '''
 
     # The controllers below must match the ones from Moveit!
-    controllers = ['head_yaw','head_pitch']
+    # controllers = ['head_yaw','head_pitch']
+    # controller_namespace = 'head_joint_trajectory_controller'
+    controllers = rospy.get_param('/moveit/move_group/controller_list')[1].get('joints','none')
+    rospy.loginfo("Found controllers: " + str(controllers))
+    print controllers
     controller_namespace = 'head_joint_trajectory_controller'
 
     rospy.init_node('joint_trajectory_action_node', anonymous=False)
