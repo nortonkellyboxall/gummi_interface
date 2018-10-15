@@ -217,9 +217,12 @@ class Gummi:
         return velocities
 
     # This function is not used anywhere here...
-    def setCocontraction(self, msg):
-        for name, effort in zip(msg.name, msg.effort):
-            self.joints[name]['effort'] = effort
+    def setCocontraction(self, msgs):
+        # for name, effort in zip(msg.name, msg.effort):
+        #     self.joints[name]['effort'] = effort
+        for msg in msgs:
+            self.joints[msg.name]['effort'] = msg.effort
+
 
     # This function is not used anywhere here...
     def goTo(self, positions, now):

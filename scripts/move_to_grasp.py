@@ -37,42 +37,26 @@ def get_grasp():
     return pose
 
 def move_to_grasp(pose):
-    waypoints = []
+    print "============ Printing robot state"
+    print robot.get_current_state()
+    print "============"
 
-    # start with the current pose
-    waypoints.append(group.get_current_pose().pose)
+    print "============ Generating plan 1"
+    print "Pose=>",group.get_current_pose().pose
     pose_target_1 = pose
-    pose_target_1.position.x -= 0.05
-    waypoints.append(copy.deepcopy(pose_target_1))
-    pose_target_1.position.x += 0.05 
-    waypoints.append(copy.deepcopy(pose_target_1))
+    pose_target_1.orientation = group.get_current_pose().pose.orientation
+    plan2 = group.plan()
+    group.set_pose_target(pose_target_1)
+    print "============ Waiting while RVIZ displays plan1..."
+    rospy.sleep(1)
 
-    (plan3, fraction) = group.compute_cartesian_path(
-                             waypoints,   # waypoints to follow
-                             0.01,        # eef_step
-                             0.0)         # jump_threshold
+    print "============ Visualizing plan1"
+    display_trajectory = moveit_msgs.msg.DisplayTrajectory()
 
-
-    # print "============ Printing robot state"
-    # print robot.get_current_state()
-    # print "============"
-
-    # print "============ Generating plan 1"
-    # print "Pose=>",group.get_current_pose().pose
-    # pose_target_1 = pose
-    # pose_target_1.orientation = group.get_current_pose().pose.orientation
-    # plan2 = group.plan()
-    # group.set_pose_target(pose_target_1)
-    # print "============ Waiting while RVIZ displays plan1..."
-    # rospy.sleep(1)
-
-    # print "============ Visualizing plan1"
-    # display_trajectory = moveit_msgs.msg.DisplayTrajectory()
-
-    # display_trajectory.trajectory_start = robot.get_current_state()
-    # display_trajectory.trajectory.append(plan2)
-    # display_trajectory_publisher.publish(display_trajectory)
-    # rospy.sleep(1)
+    display_trajectory.trajectory_start = robot.get_current_state()
+    display_trajectory.trajectory.append(plan2)
+    display_trajectory_publisher.publish(display_trajectory)
+    rospy.sleep(1)
 
     group.go(wait=True)
 
@@ -120,7 +104,7 @@ if __name__ == '__main__':
 
     scene = moveit_commander.PlanningSceneInterface()
 
-    group = moveit_commander.MoveGroupCommander("pointer")
+    group = moveit_commander.MoveGroupCommander("right_arm")
 
     display_trajectory_publisher = rospy.Publisher(
                                         '/moveit/move_group/display_planned_path',

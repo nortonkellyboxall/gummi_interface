@@ -36,6 +36,20 @@ def main(args):
     gummi.setCollisionResponses(shoulder_yaw=False, shoulder_roll=False, shoulder_pitch=False, elbow=False)
     rospy.loginfo("GummiArm is live!")
 
+    # name = ['shoulder_yaw','shoulder_roll','shoulder_pitch','upperarm_roll','elbow','forearm_roll','wrist_pitch']
+    # effort = [50,50,50,100,50,100,50]
+    # class Msg:
+    #     def __init__(self, name, effort):
+    #         self.name = name
+    #         self.effort = effort
+
+    # msgs = []
+    # for i, j in zip(name, effort):
+    #     msgs.append(Msg(i, j))
+    # raw_input('press enter')
+    # gummi.setCocontraction(msgs)
+    # gummi.servoTo()
+    # print 'i apparently changed co-contraction'
     while not rospy.is_shutdown():
         try:
             rospy.has_param("/dynamixel_manager_arm/namespace")
