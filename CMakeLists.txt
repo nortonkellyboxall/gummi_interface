@@ -48,6 +48,7 @@ catkin_python_setup()
 add_message_files(
   FILES
   Diagnostics.msg
+  CoContraction.msg
 )
 
 ## Generate services in the 'srv' folder

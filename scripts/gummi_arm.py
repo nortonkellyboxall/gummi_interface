@@ -29,7 +29,7 @@ def main(args):
         gummi.goRestingPose(False)
         r.sleep()
 
-    #for i in range(0,100):
+    # for i in range(0,100):
     #    gummi.forearmRoll.servoTo(pi/2)
     #    r.sleep()
 
@@ -37,7 +37,7 @@ def main(args):
     rospy.loginfo("GummiArm is live!")
 
     # name = ['shoulder_yaw','shoulder_roll','shoulder_pitch','upperarm_roll','elbow','forearm_roll','wrist_pitch']
-    # effort = [50,50,50,100,50,100,50]
+    # effort = [0.5,0.5,0.5,100,0.5,100,0.5]
     # class Msg:
     #     def __init__(self, name, effort):
     #         self.name = name
@@ -49,7 +49,7 @@ def main(args):
     # raw_input('press enter')
     # gummi.setCocontraction(msgs)
     # gummi.servoTo()
-    # print 'i apparently changed co-contraction'
+
     while not rospy.is_shutdown():
         try:
             rospy.has_param("/dynamixel_manager_arm/namespace")

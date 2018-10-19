@@ -7,6 +7,7 @@ import sys
 
 # from geometry_msgs.msg import Twist
 from sensor_msgs.msg import JointState
+from msg import CoContraction
 
 from antagonist import Antagonist
 from direct_drive import DirectDrive
@@ -63,6 +64,7 @@ class Gummi:
     def initSubscribers(self):
         rospy.logwarn("Processing commands from gummi/joint_commands. Don't try to control it in parallel!")
         rospy.Subscriber('gummi/joint_commands', JointState, self.cmdCallback)
+        rospy.Subscriber('gummi/cocontraction', CoContraction, self.setCocontraction, queue_size=1)
 
 
     def cmdCallback(self, msg):
@@ -115,7 +117,6 @@ class Gummi:
             self.JoinStateMsg.effort[i] = self.joints[name]['effort']
 
         self.jointStatePub.publish(self.JoinStateMsg)
-
 
     def servoTo(self):
         if self.teleop == 0:
@@ -217,11 +218,15 @@ class Gummi:
         return velocities
 
     # This function is not used anywhere here...
-    def setCocontraction(self, msgs):
-        # for name, effort in zip(msg.name, msg.effort):
-        #     self.joints[name]['effort'] = effort
-        for msg in msgs:
-            self.joints[msg.name]['effort'] = msg.effort
+    def setCocontraction(self, msg):
+        print msg
+        for i,name in enumerate(msg.name):
+            self.joints[name]['effort'] = msg.effort[i]
+        self.servoTo()
+        #for name, effort in zip(msg.name, msg.effort):
+        #    self.joints[name]['effort'] = effort
+        # for msg in msgs:
+        #     self.joints[msg.name]['effort'] = msg.effort
 
 
     # This function is not used anywhere here...

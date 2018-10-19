@@ -6,20 +6,21 @@ import numpy as np
 import cv2
 import sys
 from geometry_msgs.msg import Point, Twist
-from sensor_msgs.msg import Image, CameraInfo
+from sensor_msgs.msg import Image, CameraInfo, JointState
 import copy
 import dougsm_helpers.tf_helpers as tfh
 import moveit_commander
 import moveit_msgs.msg
 import geometry_msgs.msg
 from gummi_interface.gummi import Gummi
+from gummi_interface.msg import CoContraction
 
 import cv_bridge
 bridge = cv_bridge.CvBridge()
 
-def get_image():
-    rospy.Subscriber("/camera/depth/image_meters", Image, callback)
-    rospy.spin()
+pub = None
+base = None
+
 
 def callback(msg):
     #make a copy of the image so that the end effector point can be inserted into the depth image
@@ -40,6 +41,29 @@ def callback(msg):
     cv2.circle(curr_depth_img,(min_dist_px[1],min_dist_px[0]),10,(0,255,0),-1)
     cv2.imshow('image',curr_depth_img)
     cv2.waitKey(1)
+
+    brace_for_impact(min_dist)
+
+
+def brace_for_impact(min_dist):
+    global pub 
+    if pub is None:
+        print("Hasn't been created yet.")
+        return
+
+    eps = 0.03 #minimum distance that you want to let it go to
+    mod_effort = 1-(eps/min_dist)
+    if mod_effort < 0:
+        mod_effort = -1*mod_effort
+    msg = CoContraction()
+    msg.name = ['wrist_pitch','shoulder_roll','shoulder_yaw', 'shoulder_pitch', 'elbow']
+    #name = ['wrist_pitch','shoulder_roll','head_yaw','upperarm_roll','shoulder_yaw', 'shoulder_pitch', 'elbow','head_pitch','forearm_roll']
+    msg.effort = [ mod_effort, mod_effort, mod_effort,mod_effort, mod_effort]
+    # effort = [ 0.5, 0.5, 100, 0.5, 100, 0.5, 0.5, 100]
+
+    #base.effort = effort
+    #rospy.logwarn(base.effort) 
+    pub.publish(msg)
     
 def calc_min_dist(img, px, py, dp, centre):
 
@@ -92,15 +116,22 @@ def get_ee_point(centre):
 
 
 if __name__ == '__main__':
+    global pub
+    pub = rospy.Publisher('/gummi/cocontraction', CoContraction, queue_size=1)
     rospy.init_node('collision_prepare', anonymous=True)
-
+    rate = rospy.Rate(100)
     moveit_commander.roscpp_initialize(sys.argv)
-        
+
     robot = moveit_commander.RobotCommander()
 
     scene = moveit_commander.PlanningSceneInterface()
 
     group = moveit_commander.MoveGroupCommander("right_arm")
+    
+    rospy.Subscriber("/camera/depth/image_meters", Image, callback)
 
-    while not rospy.is_shutdown():
-        get_image()
+    base = rospy.wait_for_message('/gummi/joint_states', JointState)
+    print base
+
+    while not rospy.is_shutdown():  
+       rate.sleep()

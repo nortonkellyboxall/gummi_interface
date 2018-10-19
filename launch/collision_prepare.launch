@@ -1,8 +1,10 @@
 <launch>
 
 <group ns="moveit">
-
-<node name="move" pkg="gummi_interface" type="collision_prepare.py" output="screen"/> 
+    <include file="$(find gummi_interface)/launch/load_config.launch" ns="move">
+    </include>
+    <node name="move" pkg="gummi_interface" type="collision_prepare.py" output="screen">
+    </node> 
 
 </group>
 
