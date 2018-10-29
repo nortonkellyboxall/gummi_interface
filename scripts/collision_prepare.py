@@ -20,8 +20,8 @@ bridge = cv_bridge.CvBridge()
 
 pub = None
 base = None
-
-
+mod_effort_avg = np.zeros([5])
+count = 0
 def callback(msg):
     #make a copy of the image so that the end effector point can be inserted into the depth image
     curr_depth_img = copy.deepcopy(bridge.imgmsg_to_cv2(msg))
@@ -31,6 +31,10 @@ def callback(msg):
 
     #set the point you wish to measure everything to
     px, py, dp = get_ee_point(centre)
+
+    if not 0 <= px <= 480 and not 0 <= py <=640:
+        rospy.logerr('Camera Cannot See the End Effector')
+    
 
     #pass into function to calculate the distance of every pixel to your point
     min_dist, min_dist_px = calc_min_dist(curr_depth_img, px, py, dp, centre)
@@ -47,22 +51,49 @@ def callback(msg):
 
 def brace_for_impact(min_dist):
     global pub 
+    global mod_effort_avg
+    global count
     if pub is None:
         print("Hasn't been created yet.")
         return
 
+    lower, upper = 0.2, 0.95
     eps = 0.03 #minimum distance that you want to let it go to
-    mod_effort = 1-(eps/min_dist)
-    if mod_effort < 0:
-        mod_effort = -1*mod_effort
+    mod_effort_3 = 1-(eps/min_dist) #linear decay
+    mod_effort_2 = -1*(-1-(1-np.exp(eps/min_dist))) #Exponential Decay
+    mod_effort = 1 -(1 - (1/np.exp(eps/min_dist)))
+    # effort = [mod_effort,mod_effort_2,mod_effort_3]
+
     msg = CoContraction()
+
+    #Sanity Checking to make sure effort doesnt go outside bounds
+    if mod_effort < 0.1:
+        mod_effort = 0.1
+
+    if mod_effort > upper:
+        mod_effort = upper
+
+    #Ensure effort only ranges between 0.4 and 0.95
+    mod_effort = lower + (upper-lower)*mod_effort
+
+    if count > len(mod_effort_avg)-1:
+        count = 0
+    mod_effort_avg[count] = mod_effort
+    count = count + 1
+    mod_effort = np.mean(mod_effort_avg)
+
+    
+    # msg.name = ['elbow']
+    # msg.effort = [mod_effort]
+
     msg.name = ['wrist_pitch','shoulder_roll','shoulder_yaw', 'shoulder_pitch', 'elbow']
-    #name = ['wrist_pitch','shoulder_roll','head_yaw','upperarm_roll','shoulder_yaw', 'shoulder_pitch', 'elbow','head_pitch','forearm_roll']
     msg.effort = [ mod_effort, mod_effort, mod_effort,mod_effort, mod_effort]
-    # effort = [ 0.5, 0.5, 100, 0.5, 100, 0.5, 0.5, 100]
+
+
 
     #base.effort = effort
-    #rospy.logwarn(base.effort) 
+    
+    # rospy.logwarn(effort) 
     pub.publish(msg)
     
 def calc_min_dist(img, px, py, dp, centre):
@@ -125,13 +156,19 @@ if __name__ == '__main__':
     robot = moveit_commander.RobotCommander()
 
     scene = moveit_commander.PlanningSceneInterface()
+    
+    group = moveit_commander.MoveGroupCommander("head")
+
+    plan1 = group.plan()
+    group.set_named_target('dab')    
+    group.go(wait=True)
+    group.clear_pose_targets()
 
     group = moveit_commander.MoveGroupCommander("right_arm")
     
-    rospy.Subscriber("/camera/depth/image_meters", Image, callback)
+    rospy.Subscriber("/camera/depth_filtered/image_rect", Image, callback)
 
     base = rospy.wait_for_message('/gummi/joint_states', JointState)
-    print base
 
     while not rospy.is_shutdown():  
        rate.sleep()
