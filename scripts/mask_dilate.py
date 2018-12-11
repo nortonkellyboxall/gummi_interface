@@ -10,38 +10,37 @@ from sensor_msgs.msg import Image
 import message_filters
 import sys
 bridge = cv_bridge.CvBridge()
+from dougsm_helpers.timeit import TimeIt
 
 class DilatedFilter():
 
     def __init__(self):
+        rospy.init_node('mask_dilate', anonymous=True)
 
-        self.depth_sub = rospy.Subscriber("/camera/depth/image_meters", Image, self.depthcb)
-        self.filt_sub = rospy.Subscriber("/camera/urdf_filtered_mask", Image, self.filtcb)
-        self.filt_pub = rospy.Publisher("/camera/urdf_filtered_dilated",Image,queue_size=1)
-        self.depth_img = None
-        self.filt_img = None
+        self.depth_sub = message_filters.Subscriber("/camera/depth/image_meters", Image)
+        self.filt_sub = message_filters.Subscriber("/camera/urdf_filtered_mask", Image)
+        
+        self.filt_pub = rospy.Publisher("/camera/urdf_filtered_dilated",Image, queue_size=1)
 
+        self.kernel = np.ones((10,10),np.uint8)      
 
-    def depthcb(self, msg):
-        self.depth_img = copy.deepcopy(bridge.imgmsg_to_cv2(msg))
+        self.ts = message_filters.ApproximateTimeSynchronizer([self.depth_sub, self.filt_sub], queue_size=1, slop=0.1)
+        self.ts.registerCallback(self.callback)
 
-    def filtcb(self, msg):
-        self.filt_img = copy.deepcopy(bridge.imgmsg_to_cv2(msg))    
+    def callback(self, msg1, msg2):
+        depth_img = bridge.imgmsg_to_cv2(msg1)
+        filt_img = bridge.imgmsg_to_cv2(msg2)
 
-
-if __name__ == '__main__':
-    rospy.init_node('mask_dilate', anonymous=True)
-    rate = rospy.Rate(100)
-    df = DilatedFilter()
-    rospy.wait_for_message("/camera/depth/image_meters",Image)
-
-    while not rospy.is_shutdown():
-        kernel = np.ones((7,7),np.uint8)
-        curr_mask_img_dil = cv2.dilate(df.filt_img,kernel,iterations=5)
-        curr_mask_img_dil = 255 - curr_mask_img_dil
-        output = np.multiply(df.depth_img, curr_mask_img_dil)
+        curr_mask_img_dil = cv2.dilate(filt_img, self.kernel, iterations=7)
+        curr_mask_img_dil = (255 - curr_mask_img_dil)
+        curr_mask_img_dil = cv2.normalize(curr_mask_img_dil, None, alpha=0, beta=1, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_32F)
+        output = np.multiply(depth_img, curr_mask_img_dil)          
         output = bridge.cv2_to_imgmsg(output)
         df.filt_pub.publish(output)
-        # cv2.imshow('image',output)
-        # cv2.waitKey(1)        
-        rate.sleep()
+
+    def run(self):
+        rospy.spin()
+
+if __name__ == '__main__':
+    df = DilatedFilter()
+    df.run()
