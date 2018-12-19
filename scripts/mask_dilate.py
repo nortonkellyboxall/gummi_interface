@@ -17,10 +17,10 @@ class DilatedFilter():
     def __init__(self):
         rospy.init_node('mask_dilate', anonymous=True)
 
-        self.depth_sub = message_filters.Subscriber("/camera/depth/image_meters", Image)
-        self.filt_sub = message_filters.Subscriber("/camera/urdf_filtered_mask", Image)
+        self.depth_sub = message_filters.Subscriber("/camera2/depth/image_meters", Image)
+        self.filt_sub = message_filters.Subscriber("/camera2/urdf_filtered_mask", Image)
         
-        self.filt_pub = rospy.Publisher("/camera/urdf_filtered_dilated",Image, queue_size=1)
+        self.filt_pub = rospy.Publisher("/camera2/urdf_filtered_dilated",Image, queue_size=1)
 
         self.kernel = np.ones((10,10),np.uint8)      
 

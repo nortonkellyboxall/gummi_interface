@@ -3,7 +3,7 @@
 <group ns="moveit">
     <include file="$(find gummi_interface)/launch/load_config.launch" ns="move">
     </include>
-    <node name="move" pkg="gummi_interface" type="collision_prepare.py" output="screen">
+    <node name="move" pkg="gummi_interface" type="collision_prepare_colour.py" output="screen">
     </node> 
     <node name="mask_dilate" pkg="gummi_interface" type = "mask_dilate.py" output="screen"/>
 
