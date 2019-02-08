@@ -31,13 +31,13 @@ The gummi.launch file will start up the arm and run it through its required rout
 ### Post Running Launch
 The rest of the launch files are either things you can do with the gummi arm like the hand_shake.launch (not running on Luffy) or for debugging like test_antagonist.launch which will give you the ability to test each antagonist joint through its full stiffness and position range.
 
-## Scripts
+### Scripts
 This folder holds all of the scripts written in python that the launch files reference. This is the place you want to go if you want to see how they did something.
 
-## Src
+### Src
 This is where all of the low level control happens and where the Gummi class is located. This holds all of the definitions for controlling the arm under the equilibirum model for each of the antagonist joints etc.
 
-#Getting a Deeper Understanding of the Package
-
+# Getting a Deeper Understanding of the Package
+COMING SOON 
 
 
