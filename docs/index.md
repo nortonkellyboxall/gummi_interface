@@ -169,4 +169,20 @@ def cmdCallback(self, msg):
             self.passiveHold()
 ```
 
+The servoTo function is one of the most used functions in the classe, this function is called when you publish in gummi/joint_commands. All it does is check which controller is used for each joint and then moves them to their respective position using the specific controller required.
+``` python
+    def servoTo(self):
+    if self.teleop == 0:
+        for name in self.joints.keys():
+            if self.joints[name]['antagonist']:
+                self.joints[name]['controller'].servoTo(self.joints[name]['position'],
+                                                        self.joints[name]['effort'])
+            else:
+                self.joints[name]['controller'].setTorqueLimit(self.joints[name]['effort'])
+                self.joints[name]['controller'].servoTo(self.joints[name]['position'])
+        self.publishJointState()
+    else:
+        rospy.logwarn("Asked to servo to pose, but ignoring as in teleop mode. Check gummi.yaml file.")
+```
+``` python
 
