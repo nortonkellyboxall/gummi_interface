@@ -10,7 +10,7 @@ The packages are as follows:
 - [gummi_head_twodof](https://nortonkellyboxall.github.io/gummi_head_twodof/)
 - [gummi_interface](https://nortonkellyboxall.github.io/gummi_interface/)
 - [gummi_moveit](https://github.com/nortonkellyboxall/gummi_moveit)
-- [gummi_hardware_luffy](https://nortonkellyboxall.github.io/gummi_hardware_luffy/)
+- [gummi_hardware_luffy](https://nortonkellyboxall.github.io/gummi_hardware_Luffy/)
 
 Each of these packages are connected and required to be cloned or forked.
 
@@ -151,7 +151,7 @@ class Gummi:
         rospy.logwarn("Processing commands from gummi/joint_commands. Don't try to control it in parallel!")
         rospy.Subscriber('gummi/joint_commands', JointState, self.cmdCallback)
 ```
-Next the callback is defined for the gummi/joint_commands topic. In this, first the joint is updated with the new position, velocity and efforts as commanded. Then unless you are in teleop or velocity control, the arm will then either stay still if the position or effort doesnt change or it will closed loop control to the desired position and effort.
+Next the callback is defined for the gummi/joint_commands topic. In this, first the joint is updated with the new position, velocity and efforts as commanded. Then unless you are in teleop or velocity control, the arm will then either stay still if the position or effort does not change or it will closed loop control to the desired position and effort.
 
 ``` python
 def cmdCallback(self, msg):
@@ -169,7 +169,7 @@ def cmdCallback(self, msg):
             self.passiveHold()
 ```
 
-The servoTo function is one of the most used functions in the classe, this function is called when you publish in gummi/joint_commands. All it does is check which controller is used for each joint and then moves them to their respective position using the specific controller required.
+The servoTo function is one of the most used functions in the class, this function is called when you publish in gummi/joint_commands. All it does is check which controller is used for each joint and then moves them to their respective position using the specific controller required.
 ``` python
     def servoTo(self):
     if self.teleop == 0:
@@ -184,5 +184,8 @@ The servoTo function is one of the most used functions in the classe, this funct
     else:
         rospy.logwarn("Asked to servo to pose, but ignoring as in teleop mode. Check gummi.yaml file.")
 ```
-``` python
+Since there are two joint types in the Gummi Arm there are two lower level controllers that are used when commanding the gummi arm. If the joint is antagonistic then it uses the Antagonist class in antagonist.py and if it is a direct drive it uses the DirectDrive class in direct_drive.py. The latter is a much simpler class since the joint position is the motor position, however there is a little more complexity within the Antagonist class since the position and stiffness of the joint are controlled by two motors.
+
+
+
 
