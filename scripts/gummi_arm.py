@@ -5,7 +5,6 @@ import sys
 import random
 import time
 from math import pi
-
 from gummi_interface.gummi import Gummi
 
 def main(args):
@@ -25,10 +24,6 @@ def main(args):
     for i in range(0,400):
         gummi.goRestingPose(False)
         r.sleep()
-
-    # for i in range(0,100):
-    #    gummi.forearmRoll.servoTo(pi/2)
-    #    r.sleep()
 
     gummi.setCollisionResponses(shoulder_yaw=False, shoulder_roll=False, shoulder_pitch=False, elbow=False)
     rospy.loginfo("GummiArm is live!")
