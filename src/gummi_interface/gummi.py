@@ -7,6 +7,7 @@ import sys
 
 # from geometry_msgs.msg import Twist
 from sensor_msgs.msg import JointState
+from msg import CoContraction
 
 from antagonist import Antagonist
 from direct_drive import DirectDrive
@@ -63,21 +64,29 @@ class Gummi:
     def initSubscribers(self):
         rospy.logwarn("Processing commands from gummi/joint_commands. Don't try to control it in parallel!")
         rospy.Subscriber('gummi/joint_commands', JointState, self.cmdCallback)
+        rospy.Subscriber('gummi/cocontraction', CoContraction, self.setCocontraction, queue_size=1)
 
 
     def cmdCallback(self, msg):
-        for name, position, velocity, effort in zip(msg.name, msg.position, msg.velocity, msg.effort):
-            self.joints[name]['position'] = position
-            self.joints[name]['velocity'] = velocity
-            self.joints[name]['effort'] = effort
-
         if self.teleop == 1 or self.velocity_control == 1:
-            self.doVelocityUpdate()
-        else:
-            if sum([effort >=0 for effort in msg.effort]):
-                self.servoTo()
+            for name, velocity, effort in zip(msg.name, msg.velocity, msg.effort):
+                self.joints[name]['velocity'] = velocity
+                self.joints[name]['effort'] = effort
+            if len(msg.position) is not 0:
+                rospy.logwarn("Receiving position list, but in teleop mode. Ignoring.")
             else:
-                self.passiveHold()
+                self.doVelocityUpdate()
+        else:
+            for name, position, velocity, effort in zip(msg.name, msg.position, msg.velocity, msg.effort):
+                self.joints[name]['position'] = position
+                self.joints[name]['effort'] = effort
+            if len(msg.position) is 0:
+                rospy.logwarn("Receiving zero length position list, but not in teleop mode. Ignoring.")
+            else:
+                if sum([effort >=0 for effort in msg.effort]):
+                    self.servoTo()
+                else:
+                    self.passiveHold()
 
 
     def doUpdate(self):
@@ -87,7 +96,7 @@ class Gummi:
 
     def doVelocityUpdate(self):
         for name in self.joints.keys():
-                if self.joints[name]['effort'] < 0: # ballistic movement
+                if self.joints[name]['effort'] < 0: # shift equilibrium point in open loop
                     if self.joints[name]['antagonist']:
                         self.joints[name]['controller'].moveWith(self.joints[name]['velocity'],
                                                                  abs(self.joints[name]['effort']))
@@ -108,7 +117,6 @@ class Gummi:
             self.JoinStateMsg.effort[i] = self.joints[name]['effort']
 
         self.jointStatePub.publish(self.JoinStateMsg)
-
 
     def servoTo(self):
         if self.teleop == 0:
@@ -135,7 +143,7 @@ class Gummi:
     def goRestingPose(self, now):
         for name in self.joints.keys():
             if self.joints[name]['antagonist']:
-                self.joints[name]['controller'].servoTo(0,
+                self.joints[name]['controller'].servoTo(self.joints[name]['controller'].getRestingPoseAngle(),
                                                      self.joints[name]['effort'])
             else:
                 self.joints[name]['controller'].servoTo(0)
@@ -158,6 +166,26 @@ class Gummi:
                 self.joints[name]['controller'].servoTo(self.joints[name]['gradual_startup_position'])
             rospy.sleep(self.joints[name]['gradual_startup_time'])
 
+    def testLimits(self):
+        for name in self.joints.keys():
+            if self.joints[name]['antagonist']:
+                raw_input("Press Enter to move the %s joint to its minimum postion" % self.joints[name]['controller'].name)
+                self.joints[name]['controller'].moveTo(self.joints[name]['controller'].angle.minAngle,
+                                                       self.joints[name]['effort'])
+                raw_input("Press Enter to move the %s joint to its maximum postion" % self.joints[name]['controller'].name)
+                self.joints[name]['controller'].moveTo(self.joints[name]['controller'].angle.maxAngle,
+                                                       self.joints[name]['effort'])
+                raw_input("Press Enter to move the %s joint to its zero postion" % self.joints[name]['controller'].name)
+                self.joints[name]['controller'].moveTo(0,
+                                                       self.joints[name]['effort'])
+            else:
+                raw_input("Press Enter to move the %s joint to its minimum postion" % self.joints[name]['controller'].name)
+                self.joints[name]['controller'].servoTo(self.joints[name]['controller'].angle.minAngle)
+                raw_input("Press Enter to move the %s joint to its maximum postion" % self.joints[name]['controller'].name)
+                self.joints[name]['controller'].servoTo(self.joints[name]['controller'].angle.maxAngle)
+                raw_input("Press Enter to move the %s joint to its zero postion" % self.joints[name]['controller'].name)
+                self.joints[name]['controller'].servoTo(0)
+
     def doZeroAllServos(self):
         for name in self.joints.keys():
             if self.joints[name]['antagonist']:
@@ -167,6 +195,13 @@ class Gummi:
                 self.joints[name]['controller'].servoTo(0)
             rospy.sleep(self.joints[name]['gradual_startup_time'])
 
+    def doSetPoseToDesired(self):
+        for name in self.joints.keys():
+            angle = self.joints[name]['controller'].getJointAngle()
+            if self.joints[name]['antagonist']:
+                self.joints[name]['controller'].servoTo(angle, self.joints[name]['effort'])
+            else:
+                self.joints[name]['controller'].servoTo(angle)
 
     # This function is not used anywhere here...
     def getJointAngles(self):
@@ -182,10 +217,12 @@ class Gummi:
             velocities.append(self.joints[name]['controller'].getJointVelocity())
         return velocities
 
-    # This function is not used anywhere here...
     def setCocontraction(self, msg):
-        for name, effort in zip(msg.name, msg.effort):
-            self.joints[name]['effort'] = effort
+        print msg
+        for i,name in enumerate(msg.name):
+            self.joints[name]['effort'] = msg.effort[i]
+        self.servoTo()
+
 
     # This function is not used anywhere here...
     def goTo(self, positions, now):

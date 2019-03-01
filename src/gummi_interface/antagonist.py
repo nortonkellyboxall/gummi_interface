@@ -32,6 +32,10 @@ class Antagonist:
         self.vGain = rospy.get_param("~" + self.name + "/gains/D")
         self.maxAbsForwardError = rospy.get_param("~" + self.name + "/maxAbsForwardError")
 
+        # Attribute stores resting pose angle of antagonist-pair motor joints
+        # taken from joint yaml file in gummi_base and gummi_ee pkgs.
+        self.restingPoseAngle = rospy.get_param("~" + self.name + "/restingPoseAngle")
+
         self.range = maxAngle - minAngle
         self.angle = JointAngle(self.nameEncoder, self.signEncoder, minAngle, maxAngle, True)
 
@@ -198,6 +202,7 @@ class Antagonist:
         self.publishDiagnostics()
 
     def doUpdateWhenLimit(self):
+        rospy.logwarn("Warning: Outside joint range for joint " + self.name + " when moving passively (negative effort), shifting equilibrium.")
         if self.angle.isBeyondMin():
             self.eqModel.doEquilibriumIncrement(0.002)
         if self.angle.isBeyondMax():
@@ -326,3 +331,6 @@ class Antagonist:
 
     def setCollisionResponse(self, response):
         self.collisionResponse = response
+
+    def getRestingPoseAngle(self):
+        return self.restingPoseAngle
