@@ -217,16 +217,11 @@ class Gummi:
             velocities.append(self.joints[name]['controller'].getJointVelocity())
         return velocities
 
-    # This function is not used anywhere here...
     def setCocontraction(self, msg):
         print msg
         for i,name in enumerate(msg.name):
             self.joints[name]['effort'] = msg.effort[i]
         self.servoTo()
-        #for name, effort in zip(msg.name, msg.effort):
-        #    self.joints[name]['effort'] = effort
-        # for msg in msgs:
-        #     self.joints[msg.name]['effort'] = msg.effort
 
 
     # This function is not used anywhere here...

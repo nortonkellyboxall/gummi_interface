@@ -26,8 +26,8 @@ class CollisionPrepare():
         self.pub = rospy.Publisher('/gummi/cocontraction', CoContraction, queue_size=1)
         self.pub2 = rospy.Publisher("/gummi/distance_to_ee",Float64,queue_size=1)
         self.pub3 = rospy.Publisher("/gummi/elbow_cocontraction",Float64, queue_size=1)
-        self.sub = rospy.Subscriber("/camera2/urdf_filtered_dilated", Image, self.callback2)
-        self.sub2 = rospy.Subscriber("/camera2/depth/image_meters", Image, self.callback)
+        self.sub = rospy.Subscriber("/camera1/urdf_filtered_dilated", Image, self.callback) 
+        # self.sub2 = rospy.Subscriber("/camera2/depth/image_meters", Image, self.callback)
         
         self.avg_mod_effort = np.zeros([5])
         self.count = 0
@@ -47,23 +47,13 @@ class CollisionPrepare():
         self.group = moveit_commander.MoveGroupCommander("right_arm")
 
         self.box = 0.30 #the half width of the observation bounding box
-        self.f = 647.889404296875  #Camera intrinsics
-
-    def callback2(self,msg):
-        self.filt_img = copy.deepcopy(bridge.imgmsg_to_cv2(msg))
+        self.f = 393.64373779296875  #Camera intrinsics
 
     def callback(self,msg):
         #make a copy of the image so that the end effector point can be inserted into the depth image
 
         curr_depth_img = copy.deepcopy(bridge.imgmsg_to_cv2(msg))
-        plot_img = copy.deepcopy(curr_depth_img)
-        cv2.imshow('image',self.filt_img)
-        cv2.waitKey(1)
-        curr_depth_img[:,0:200] = self.filt_img[:,0:200]
-        curr_depth_img[curr_depth_img>1.0] = 100
-        curr_depth_img[0:200,:] = 100
-        cv2.imshow('image1',curr_depth_img)
-        cv2.waitKey(1)
+        plot_img = copy.deepcopy(curr_depth_img) 
 
         #find the center for use in the distance calculation later
         centre = (curr_depth_img.shape[0]/2, curr_depth_img.shape[1]/2)
@@ -133,7 +123,7 @@ class CollisionPrepare():
         #get the position of the end effector
         ee_pos = self.group.get_current_pose().pose
         #get pose wrt the optical frame
-        ee_pos = tfh.convert_pose(ee_pos,'base_link',"camera2_depth_optical_frame")
+        ee_pos = tfh.convert_pose(ee_pos,'base_link',"camera1_depth_optical_frame")
         #get rid of rotations
         ee_pos = [ee_pos.position.x, ee_pos.position.y, ee_pos.position.z]
 
@@ -211,11 +201,11 @@ class CollisionPrepare():
         # self.count = self.count + 1
         # mod_effort = np.mean(self.avg_mod_effort)
         
-        msg.name = ['shoulder_pitch']
-        msg.effort = [mod_effort]
+        # msg.name = ['shoulder_pitch']
+        # msg.effort = [mod_effort]
 
-        # msg.name = ['wrist_pitch','shoulder_roll','shoulder_yaw', 'shoulder_pitch', 'elbow']
-        # msg.effort = [ mod_effort, mod_effort, mod_effort,mod_effort, mod_effort]
+        msg.name = ['wrist_pitch','shoulder_roll','shoulder_yaw', 'shoulder_pitch', 'elbow']
+        msg.effort = [ mod_effort, mod_effort, mod_effort,mod_effort, mod_effort]
         rospy.logwarn(mod_effort)
         self.pub3.publish(mod_effort)
 
